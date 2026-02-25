@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en" style="height:100%;overflow:hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suncrest Call Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                            950: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html, body { height: 100%; margin: 0; overflow: hidden; }
+        body { -webkit-font-smoothing: antialiased; }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+        }
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .status-ended { background: #f1f5f9; color: #475569; }
+        .status-ended::before { background: #94a3b8; }
+        .status-queued { background: #fef3c7; color: #92400e; }
+        .status-queued::before { background: #f59e0b; animation: pulse-dot 2s infinite; }
+        .status-ringing { background: #dbeafe; color: #1e40af; }
+        .status-ringing::before { background: #3b82f6; animation: pulse-dot 1s infinite; }
+        .status-in-progress { background: #ecfdf5; color: #065f46; }
+        .status-in-progress::before { background: #10b981; animation: pulse-dot 2s infinite; }
+        .status-failed { background: #fef2f2; color: #991b1b; }
+        .status-failed::before { background: #ef4444; }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        @keyframes slide-in-right {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slide-up {
+            from { transform: translateY(12px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .animate-slide-in { animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .animate-fade-in { animation: fade-in 0.2s ease-out; }
+        .animate-slide-up { animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%);
+        }
+
+        .banner-gradient {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6366f1 100%);
+        }
+
+        .table-row-hover {
+            transition: all 0.15s ease;
+        }
+        .table-row-hover:hover {
+            background: #f8fafc;
+            box-shadow: inset 3px 0 0 #6366f1;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .tab-active {
+            color: #4f46e5;
+            border-color: #4f46e5;
+            background: linear-gradient(to top, rgba(99, 102, 241, 0.05) 0%, transparent 100%);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .skeleton-shimmer {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body style="height:100%;overflow:hidden;margin:0" class="bg-slate-50 text-slate-900 font-sans">
+    <div style="display:flex;height:100%;overflow:hidden">
+        <!-- Mobile Header -->
+        <div class="lg:hidden fixed top-0 left-0 right-0 z-40 sidebar-gradient px-4 py-2 flex items-center justify-between border-b border-white/10">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center p-1">
+                    <img src="/static/suncrest-logo.png" alt="Suncrest" class="w-full h-full object-contain">
+                </div>
+                <span class="text-white font-semibold text-base tracking-tight">Suncrest</span>
+            </div>
+            <button onclick="toggleMobileMenu()" class="text-white/80 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu Overlay -->
+        <div id="mobileMenu" class="lg:hidden fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onclick="toggleMobileMenu()"></div>
+            <aside class="absolute left-0 top-0 h-full w-72 sidebar-gradient flex flex-col animate-slide-in shadow-2xl">
+                <div class="p-5 border-b border-white/10 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center p-1">
+                            <img src="/static/suncrest-logo.png" alt="Suncrest" class="w-full h-full object-contain">
+                        </div>
+                        <span class="text-white font-semibold text-lg tracking-tight">Suncrest</span>
+                    </div>
+                    <button onclick="toggleMobileMenu()" class="text-white/50 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <nav class="flex-1 p-4">
+                    <div class="text-xs font-semibold text-indigo-300/50 uppercase tracking-widest px-3 mb-3">Menu</div>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-white bg-white/10 rounded-lg text-sm font-medium border border-white/5">
+                                <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                </svg>
+                                Call Log
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+        </div>
+        
+        <!-- Sidebar (Desktop) -->
+        <aside class="hidden lg:flex w-60 sidebar-gradient flex-col border-r border-white/5">
+            <div class="p-5 border-b border-white/10">
+                <div class="flex flex-col items-center text-center">
+                    <div class="w-full bg-white/10 rounded-xl p-3 mb-3">
+                        <img src="/static/suncrest-logo.png" alt="Suncrest Counseling" class="w-full h-auto">
+                    </div>
+                    <span class="text-indigo-300/70 text-[11px] font-medium italic tracking-wide">The Dawning of a New Day</span>
+                </div>
+            </div>
+            
+            <nav class="flex-1 p-4">
+                <div class="text-xs font-semibold text-indigo-300/40 uppercase tracking-widest px-3 mb-3">Navigation</div>
+                <ul class="space-y-1">
+                    <li>
+                        <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-white bg-white/10 rounded-lg text-sm font-medium border border-white/5 shadow-sm">
+                            <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            Call Log
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="p-4 border-t border-white/5">
+                <div class="px-3 py-3 rounded-lg bg-white/5 border border-white/5">
+                    <div class="text-xs text-indigo-300/60 font-medium mb-1">AI Agent</div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50"></span>
+                        <span class="text-sm text-white/90 font-medium">Anna is online</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden" class="pt-14 lg:pt-0">
+            <!-- Call Agent Banner -->
+            <div class="banner-gradient px-4 lg:px-8 py-3 lg:py-3.5 relative overflow-hidden">
+                <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImEiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA3KSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNhKSIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIvPjwvc3ZnPg==')] opacity-50"></div>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 text-white text-center relative">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs sm:text-sm font-medium text-white/90">Talk to Anna for SOTP and aftercare program information:</span>
+                    </div>
+                    <a href="tel:+14843940334" class="text-base sm:text-lg font-bold hover:underline decoration-2 underline-offset-2 tracking-tight">+1 (484) 394-0334</a>
+                </div>
+            </div>
+            
+            <!-- Header -->
+            <header class="bg-white border-b border-slate-200/80 px-4 lg:px-8 py-4 lg:py-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-xl lg:text-2xl font-bold text-slate-900 tracking-tight">Call Center</h1>
+                        <p class="text-slate-500 text-xs lg:text-sm mt-0.5 hidden sm:block font-medium">Monitor calls and manage conversations</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button 
+                            id="refreshBtn"
+                            onclick="loadCalls()"
+                            class="group inline-flex items-center gap-2 px-3 lg:px-4 py-2 lg:py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 disabled:opacity-50 shadow-sm"
+                        >
+                            <svg id="refreshIcon" class="w-4 h-4 group-hover:text-brand-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            <span id="refreshText" class="hidden sm:inline">Refresh</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Search & Filters -->
+            <div class="bg-white border-b border-slate-200/80 px-4 lg:px-8 py-3 lg:py-4">
+                <div class="flex flex-col lg:flex-row gap-3 lg:gap-4">
+                    <div class="flex-1 relative">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            placeholder="Search calls..."
+                            class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 bg-slate-50/50 hover:bg-white transition-colors"
+                            onkeyup="filterCalls()"
+                        >
+                    </div>
+                    <div class="flex gap-2 lg:gap-3">
+                        <select id="typeFilter" onchange="filterCalls()" class="flex-1 lg:flex-none px-3 lg:px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 cursor-pointer hover:border-slate-300 transition-colors">
+                            <option value="all">All Types</option>
+                            <option value="Inbound">Inbound</option>
+                            <option value="Outbound">Outbound</option>
+                            <option value="Web">Web</option>
+                        </select>
+                        <select id="dateFilter" onchange="filterCalls()" class="flex-1 lg:flex-none px-3 lg:px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 cursor-pointer hover:border-slate-300 transition-colors">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                        <button onclick="clearFilters()" class="px-3 lg:px-4 py-2.5 text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="bg-white border-b border-slate-200/80 px-4 lg:px-8 overflow-x-auto">
+                <div class="flex gap-1 min-w-max">
+                    <button onclick="filterByStatus('all')" class="tab-btn tab-active px-4 py-3 lg:py-3.5 text-xs lg:text-sm font-semibold border-b-2 border-brand-600 text-brand-600 whitespace-nowrap rounded-t-lg transition-all" data-tab="all">
+                        All <span class="ml-1 px-1.5 py-0.5 rounded-md bg-brand-100 text-brand-700 text-[10px] lg:text-xs font-bold" id="tabAll">0</span>
+                    </button>
+                    <button onclick="filterByStatus('in-progress')" class="tab-btn px-4 py-3 lg:py-3.5 text-xs lg:text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-600 whitespace-nowrap rounded-t-lg transition-all" data-tab="in-progress">
+                        In Progress <span class="ml-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[10px] lg:text-xs font-bold" id="tabInProgress">0</span>
+                    </button>
+                    <button onclick="filterByStatus('ended')" class="tab-btn px-4 py-3 lg:py-3.5 text-xs lg:text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-600 whitespace-nowrap rounded-t-lg transition-all" data-tab="ended">
+                        Completed <span class="ml-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[10px] lg:text-xs font-bold" id="tabEnded">0</span>
+                    </button>
+                    <button onclick="filterByStatus('failed')" class="tab-btn px-4 py-3 lg:py-3.5 text-xs lg:text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-600 whitespace-nowrap rounded-t-lg transition-all" data-tab="failed">
+                        Failed <span class="ml-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[10px] lg:text-xs font-bold" id="tabFailed">0</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Table -->
+            <div style="flex:1;min-height:0;overflow-y:auto" class="p-4 lg:p-6">
+                <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm shadow-slate-200/50 overflow-x-auto">
+                    <!-- Table Header -->
+                    <div class="grid grid-cols-8 gap-4 px-4 lg:px-6 py-3.5 bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-400 uppercase tracking-widest min-w-[800px]">
+                        <div>Call ID</div>
+                        <div>Date & Time</div>
+                        <div>Customer</div>
+                        <div>Type</div>
+                        <div>Status</div>
+                        <div>Duration</div>
+                        <div>Feedback</div>
+                        <div>Actions</div>
+                    </div>
+                    
+                    <!-- Table Body -->
+                    <div id="callsTable" class="min-w-[800px]">
+                        <div id="callsTableSkeleton">
+                            <div class="grid grid-cols-8 gap-4 px-4 lg:px-6 py-4 items-center border-b border-slate-100">
+                                <div class="h-4 skeleton-shimmer rounded-md w-20"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-28"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-24"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-16"></div>
+                                <div class="h-5 skeleton-shimmer rounded-full w-20"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-14"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-14"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-20"></div>
+                            </div>
+                            <div class="grid grid-cols-8 gap-4 px-4 lg:px-6 py-4 items-center border-b border-slate-100">
+                                <div class="h-4 skeleton-shimmer rounded-md w-20"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-28"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-24"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-16"></div>
+                                <div class="h-5 skeleton-shimmer rounded-full w-20"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-14"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-14"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-20"></div>
+                            </div>
+                            <div class="grid grid-cols-8 gap-4 px-4 lg:px-6 py-4 items-center border-b border-slate-100">
+                                <div class="h-4 skeleton-shimmer rounded-md w-20"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-28"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-24"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-16"></div>
+                                <div class="h-5 skeleton-shimmer rounded-full w-20"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-14"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-14"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-20"></div>
+                            </div>
+                            <div class="grid grid-cols-8 gap-4 px-4 lg:px-6 py-4 items-center border-b border-slate-100">
+                                <div class="h-4 skeleton-shimmer rounded-md w-20"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-28"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-24"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-16"></div>
+                                <div class="h-5 skeleton-shimmer rounded-full w-20"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-14"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-14"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-20"></div>
+                            </div>
+                            <div class="grid grid-cols-8 gap-4 px-4 lg:px-6 py-4 items-center">
+                                <div class="h-4 skeleton-shimmer rounded-md w-20"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-28"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-24"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-16"></div>
+                                <div class="h-5 skeleton-shimmer rounded-full w-20"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-14"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-14"></div>
+                                <div class="h-4 skeleton-shimmer rounded-md w-20"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div id="pagination" class="px-6 py-4 border-t border-slate-200/80 flex items-center justify-between bg-slate-50/50">
+                        <div class="text-sm text-slate-500 font-medium">
+                            Showing <span id="showingFrom" class="text-slate-700">0</span> to <span id="showingTo" class="text-slate-700">0</span> of <span id="totalItems" class="text-slate-700 font-semibold">0</span> calls
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="prevPage()" id="prevBtn" class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-500 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm" disabled>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <div id="pageNumbers" class="flex items-center gap-1"></div>
+                            <button onclick="nextPage()" id="nextBtn" class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-500 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm" disabled>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Call Details Slide-over -->
+        <div id="detailsPanel" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-fade-in" onclick="closeDetails()"></div>
+            <aside class="absolute right-0 top-0 h-full w-full sm:w-[420px] lg:w-[480px] glass-panel shadow-2xl flex flex-col animate-slide-in border-l border-slate-200/50">
+                <div class="px-6 py-5 border-b border-slate-200/80 flex items-center justify-between bg-white">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 tracking-tight">Call Details</h3>
+                        <p class="text-xs text-slate-400 font-medium mt-0.5">Review call information and transcript</p>
+                    </div>
+                    <button onclick="closeDetails()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="flex-1 overflow-auto p-6">
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                            <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1.5">Status</div>
+                            <span id="detailStatus" class="status-badge"></span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                            <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1.5">Duration</div>
+                            <div id="detailDuration" class="text-sm font-semibold text-slate-900">—</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Call ID</div>
+                        <div id="detailId" class="font-mono text-xs text-slate-500 break-all bg-slate-50 px-3 py-2 rounded-lg border border-slate-100"></div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Customer</div>
+                        <div id="detailCustomer" class="text-sm font-semibold text-slate-900"></div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">Ended Reason</div>
+                        <div id="detailEndedReason" class="text-sm text-slate-600"></div>
+                    </div>
+                    
+                    <div id="recordingSection" class="mb-5 hidden">
+                        <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-2">Recording</div>
+                        <audio id="recordingPlayer" controls class="w-full h-10 rounded-lg"></audio>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-3">Transcript</div>
+                        <div id="detailTranscript" class="bg-slate-50 rounded-xl p-4 space-y-4 max-h-[400px] overflow-auto border border-slate-100">
+                            <p class="text-slate-400 text-sm italic">No transcript available</p>
+                        </div>
+                    </div>
+                    
+                    <div id="feedbackLoading" class="mt-6 hidden">
+                        <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-3">Feedback</div>
+                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                            <div class="h-5 skeleton-shimmer rounded w-32 mb-2"></div>
+                            <div class="h-4 skeleton-shimmer rounded w-48"></div>
+                        </div>
+                    </div>
+                    <div id="feedbackDisplay" class="mt-6 hidden">
+                        <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-3">Feedback</div>
+                        <div class="bg-amber-50/80 border border-amber-200/60 rounded-xl p-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div id="feedbackStars" class="flex gap-0.5"></div>
+                                <span id="feedbackRatingText" class="text-sm font-bold text-amber-700"></span>
+                            </div>
+                            <div id="feedbackCommentDisplay" class="text-sm text-slate-600 hidden leading-relaxed"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="px-6 py-4 border-t border-slate-200/80 bg-white space-y-2.5">
+                    <button onclick="showFeedbackModal()" class="w-full px-4 py-2.5 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-brand-500/20 hover:shadow-lg hover:shadow-brand-500/30 flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                        </svg>
+                        <span id="feedbackBtnText">Add Feedback</span>
+                    </button>
+                    <button onclick="deleteCurrentCall()" id="deleteCallBtn" class="w-full px-4 py-2.5 border border-red-200 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-50 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                        <svg id="deleteSpinner" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span id="deleteCallText">Delete Call</span>
+                    </button>
+                </div>
+            </aside>
+        </div>
+        
+        <!-- Feedback Modal -->
+        <div id="feedbackModal" class="fixed inset-0 z-[60] hidden">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onclick="hideFeedbackModal()"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 border border-slate-200/50 animate-slide-up">
+                <h3 class="text-lg font-bold text-slate-900 mb-1 tracking-tight">Rate This Call</h3>
+                <p class="text-sm text-slate-400 mb-5">How well did the AI agent handle this call?</p>
+                
+                <div class="mb-5">
+                    <div id="starRating" class="flex gap-2 justify-center py-3">
+                        <button type="button" onclick="setRating(1)" class="star-btn text-slate-200 hover:text-amber-400 transition-all hover:scale-110" data-rating="1">
+                            <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="setRating(2)" class="star-btn text-slate-200 hover:text-amber-400 transition-all hover:scale-110" data-rating="2">
+                            <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="setRating(3)" class="star-btn text-slate-200 hover:text-amber-400 transition-all hover:scale-110" data-rating="3">
+                            <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="setRating(4)" class="star-btn text-slate-200 hover:text-amber-400 transition-all hover:scale-110" data-rating="4">
+                            <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="setRating(5)" class="star-btn text-slate-200 hover:text-amber-400 transition-all hover:scale-110" data-rating="5">
+                            <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Comment <span class="font-normal text-slate-400">(optional)</span></label>
+                    <textarea 
+                        id="feedbackComment" 
+                        rows="3"
+                        placeholder="Add any notes about this call..."
+                        class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 resize-none bg-slate-50/50 placeholder:text-slate-300"
+                    ></textarea>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="hideFeedbackModal()" id="feedbackCancelBtn" class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-50">
+                        Cancel
+                    </button>
+                    <button onclick="submitFeedback()" id="feedbackSubmitBtn" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50 shadow-md shadow-brand-500/20 flex items-center justify-center gap-2">
+                        <svg id="feedbackSpinner" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span id="feedbackSubmitText">Save Feedback</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 px-5 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 text-sm font-semibold z-[100]"></div>
+    
+    <script>
+        let calls = [];
+        let filteredCalls = [];
+        let currentFilter = 'all';
+        let currentCallId = null;
+        let currentRating = 0;
+        let currentFeedback = null;
+        
+        const ITEMS_PER_PAGE = 10;
+        let currentPage = 1;
+        
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+            document.body.classList.toggle('overflow-hidden');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        async function loadCalls() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            const refreshIcon = document.getElementById('refreshIcon');
+            const refreshText = document.getElementById('refreshText');
+            
+            refreshBtn.disabled = true;
+            refreshIcon.classList.add('animate-spin');
+            refreshText.textContent = 'Loading...';
+            
+            try {
+                const res = await fetch('/api/calls');
+                const data = await res.json();
+                
+                if (data.error) {
+                    showToast(data.error, 'error');
+                    return;
+                }
+                
+                calls = data;
+                updateTabs();
+                applyFilters();
+            } catch (err) {
+                showToast('Failed to load calls', 'error');
+            } finally {
+                refreshBtn.disabled = false;
+                refreshIcon.classList.remove('animate-spin');
+                refreshText.textContent = 'Refresh';
+            }
+        }
+        
+        function updateTabs() {
+            document.getElementById('tabAll').textContent = calls.length;
+            document.getElementById('tabInProgress').textContent = calls.filter(c => ['queued', 'ringing', 'in-progress'].includes(c.status)).length;
+            document.getElementById('tabEnded').textContent = calls.filter(c => c.status === 'ended').length;
+            document.getElementById('tabFailed').textContent = calls.filter(c => c.status === 'failed').length;
+        }
+        
+        function filterByStatus(status) {
+            currentFilter = status;
+            currentPage = 1;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const badge = btn.querySelector('span');
+                if (btn.dataset.tab === status) {
+                    btn.classList.add('tab-active', 'border-brand-600', 'text-brand-600');
+                    btn.classList.remove('border-transparent', 'text-slate-400');
+                    if (badge) { badge.className = 'ml-1 px-1.5 py-0.5 rounded-md bg-brand-100 text-brand-700 text-[10px] lg:text-xs font-bold'; }
+                } else {
+                    btn.classList.remove('tab-active', 'border-brand-600', 'text-brand-600');
+                    btn.classList.add('border-transparent', 'text-slate-400');
+                    if (badge) { badge.className = 'ml-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[10px] lg:text-xs font-bold'; }
+                }
+            });
+            
+            applyFilters();
+        }
+        
+        function filterCalls() {
+            currentPage = 1;
+            applyFilters();
+        }
+        
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('typeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekStart = new Date(todayStart);
+            weekStart.setDate(weekStart.getDate() - 7);
+            const monthStart = new Date(todayStart);
+            monthStart.setMonth(monthStart.getMonth() - 1);
+            
+            filteredCalls = calls.filter(call => {
+                if (currentFilter === 'in-progress') {
+                    if (!['queued', 'ringing', 'in-progress'].includes(call.status)) return false;
+                } else if (currentFilter !== 'all' && call.status !== currentFilter) {
+                    return false;
+                }
+                
+                if (typeFilter !== 'all' && call.type !== typeFilter) return false;
+                
+                if (dateFilter !== 'all' && call.date_time) {
+                    const callDate = new Date(call.date_time);
+                    if (dateFilter === 'today' && callDate < todayStart) return false;
+                    if (dateFilter === 'week' && callDate < weekStart) return false;
+                    if (dateFilter === 'month' && callDate < monthStart) return false;
+                }
+                
+                if (search) {
+                    const searchable = `${call.id} ${call.customer} ${call.type} ${call.status} ${call.ended_reason}`.toLowerCase();
+                    if (!searchable.includes(search)) return false;
+                }
+                
+                return true;
+            });
+            
+            renderCalls();
+            renderPagination();
+        }
+        
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('typeFilter').value = 'all';
+            document.getElementById('dateFilter').value = 'all';
+            currentFilter = 'all';
+            currentPage = 1;
+            filterByStatus('all');
+        }
+        
+        function getPagedCalls() {
+            const start = (currentPage - 1) * ITEMS_PER_PAGE;
+            return filteredCalls.slice(start, start + ITEMS_PER_PAGE);
+        }
+        
+        function getTotalPages() {
+            return Math.ceil(filteredCalls.length / ITEMS_PER_PAGE);
+        }
+        
+        function renderPagination() {
+            const totalPages = getTotalPages();
+            const totalItems = filteredCalls.length;
+            const from = totalItems === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1;
+            const to = Math.min(currentPage * ITEMS_PER_PAGE, totalItems);
+            
+            document.getElementById('showingFrom').textContent = from;
+            document.getElementById('showingTo').textContent = to;
+            document.getElementById('totalItems').textContent = totalItems;
+            
+            document.getElementById('prevBtn').disabled = currentPage <= 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+            
+            const pageNumbers = document.getElementById('pageNumbers');
+            pageNumbers.innerHTML = '';
+            
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.onclick = () => goToPage(i);
+                btn.className = i === currentPage
+                    ? 'w-8 h-8 rounded-lg text-sm font-semibold bg-brand-600 text-white shadow-sm shadow-brand-500/25'
+                    : 'w-8 h-8 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors';
+                pageNumbers.appendChild(btn);
+            }
+        }
+        
+        function prevPage() { if (currentPage > 1) { currentPage--; renderCalls(); renderPagination(); } }
+        function nextPage() { if (currentPage < getTotalPages()) { currentPage++; renderCalls(); renderPagination(); } }
+        function goToPage(page) { currentPage = page; renderCalls(); renderPagination(); }
+        
+        function renderCalls() {
+            const table = document.getElementById('callsTable');
+            const pagedCalls = getPagedCalls();
+            
+            if (filteredCalls.length === 0) {
+                table.innerHTML = `
+                    <div class="px-6 py-20 text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium text-slate-400">No calls found</p>
+                        <p class="text-xs text-slate-300 mt-1">Try adjusting your filters</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            table.innerHTML = pagedCalls.map(call => `
+                <div class="grid grid-cols-8 gap-4 px-4 lg:px-6 py-3.5 items-center border-b border-slate-100/80 table-row-hover cursor-pointer" onclick="viewCall('${call.id}')">
+                    <div class="font-mono text-xs text-slate-500 truncate">${call.short_id}</div>
+                    <div class="text-xs text-slate-500">${call.date_time}</div>
+                    <div class="text-xs font-semibold text-slate-800 truncate">${call.customer}</div>
+                    <div class="text-xs text-slate-500">
+                        <span class="inline-flex items-center gap-1.5">
+                            ${getTypeIcon(call.type_icon)}
+                            <span class="hidden sm:inline">${call.type}</span>
+                        </span>
+                    </div>
+                    <div>
+                        <span class="status-badge status-${call.status}">${formatStatus(call.status)}</span>
+                    </div>
+                    <div class="text-xs font-medium text-slate-600">${call.duration}</div>
+                    <div class="text-xs">${formatRatingStars(call.rating)}</div>
+                    <div>
+                        <button onclick="event.stopPropagation(); viewCall('${call.id}')" class="text-brand-600 hover:text-brand-800 text-xs font-semibold hover:underline decoration-brand-300 underline-offset-2 transition-colors">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function formatStatus(status) {
+            const statusMap = { 'ended': 'Completed', 'in-progress': 'In Progress', 'queued': 'Queued', 'ringing': 'Ringing', 'failed': 'Failed' };
+            return statusMap[status] || status;
+        }
+        
+        function formatRatingStars(rating) {
+            if (!rating) return '<span class="text-slate-300 text-[11px] font-medium">No feedback</span>';
+            const stars = [];
+            for (let i = 1; i <= 5; i++) {
+                stars.push(i <= rating
+                    ? '<svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>'
+                    : '<svg class="w-3.5 h-3.5 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>');
+            }
+            return `<div class="flex items-center gap-0.5">${stars.join('')}</div>`;
+        }
+        
+        function getTypeIcon(type) {
+            const icons = {
+                'globe': '<svg class="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>',
+                'phone-incoming': '<svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 3l-6 6m0 0V4m0 5h5M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z"/></svg>',
+                'phone-outgoing': '<svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 3h5m0 0v5m0-5l-6 6M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z"/></svg>'
+            };
+            return icons[type] || icons['phone-outgoing'];
+        }
+        
+        function viewCall(callId) {
+            const call = calls.find(c => c.id === callId);
+            if (!call) { showToast('Call not found', 'error'); return; }
+            
+            currentCallId = callId;
+            loadFeedback(callId);
+            
+            document.getElementById('detailStatus').textContent = formatStatus(call.status);
+            document.getElementById('detailStatus').className = `status-badge status-${call.status}`;
+            document.getElementById('detailDuration').textContent = call.duration;
+            document.getElementById('detailId').textContent = call.id;
+            document.getElementById('detailCustomer').textContent = call.customer;
+            document.getElementById('detailEndedReason').textContent = call.ended_reason;
+            
+            const transcriptEl = document.getElementById('detailTranscript');
+            if (call.transcript && Array.isArray(call.transcript) && call.transcript.length > 0) {
+                const formatted = call.transcript.map(msg => {
+                    if (msg.role === 'bot') {
+                        return `
+                            <div class="flex gap-3">
+                                <div class="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+                                    <span class="text-xs font-bold text-brand-600">A</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-[11px] font-bold text-brand-600 mb-0.5">Anna</div>
+                                    <div class="text-sm text-slate-700 leading-relaxed">${escapeHtml(msg.content)}</div>
+                                </div>
+                            </div>`;
+                    } else if (msg.role === 'user') {
+                        return `
+                            <div class="flex gap-3">
+                                <div class="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+                                    <span class="text-xs font-bold text-emerald-600">C</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-[11px] font-bold text-emerald-600 mb-0.5">Customer</div>
+                                    <div class="text-sm text-slate-700 leading-relaxed">${escapeHtml(msg.content)}</div>
+                                </div>
+                            </div>`;
+                    } else {
+                        return `
+                            <div class="text-center py-2">
+                                <span class="text-xs text-slate-400 italic">${escapeHtml(msg.content)}</span>
+                            </div>`;
+                    }
+                }).join('');
+                transcriptEl.innerHTML = formatted;
+            } else {
+                transcriptEl.innerHTML = '<p class="text-slate-400 text-sm italic">No transcript available</p>';
+            }
+            
+            const recordingSection = document.getElementById('recordingSection');
+            const recordingPlayer = document.getElementById('recordingPlayer');
+            if (call.recording_url) {
+                recordingPlayer.src = call.recording_url;
+                recordingSection.classList.remove('hidden');
+            } else {
+                recordingSection.classList.add('hidden');
+            }
+            
+            document.getElementById('detailsPanel').classList.remove('hidden');
+        }
+        
+        function closeDetails() {
+            document.getElementById('detailsPanel').classList.add('hidden');
+            document.getElementById('feedbackDisplay').classList.add('hidden');
+            document.getElementById('feedbackLoading').classList.add('hidden');
+            currentCallId = null;
+            currentFeedback = null;
+        }
+        
+        function showNewCallModal() { document.getElementById('newCallModal').classList.remove('hidden'); document.getElementById('phoneInput').focus(); }
+        function hideNewCallModal() { document.getElementById('newCallModal').classList.add('hidden'); document.getElementById('phoneInput').value = ''; }
+        
+        async function createCall() {
+            const phone = document.getElementById('phoneInput').value.trim();
+            if (!phone) { showToast('Please enter a phone number', 'error'); return; }
+            
+            const submitBtn = document.getElementById('newCallSubmitBtn');
+            const cancelBtn = document.getElementById('newCallCancelBtn');
+            const spinner = document.getElementById('newCallSpinner');
+            const submitText = document.getElementById('newCallSubmitText');
+            
+            submitBtn.disabled = true; cancelBtn.disabled = true;
+            spinner.classList.remove('hidden'); submitText.textContent = 'Starting...';
+            
+            try {
+                const res = await fetch('/api/calls', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
+                const data = await res.json();
+                if (data.error) { showToast(data.error, 'error'); return; }
+                showToast('Call initiated successfully!', 'success');
+                hideNewCallModal(); loadCalls();
+            } catch (err) {
+                showToast('Failed to create call', 'error');
+            } finally {
+                submitBtn.disabled = false; cancelBtn.disabled = false;
+                spinner.classList.add('hidden'); submitText.textContent = 'Start Call';
+            }
+        }
+        
+        async function deleteCurrentCall() {
+            if (!currentCallId) return;
+            if (!confirm('Are you sure you want to delete this call?')) return;
+            
+            const deleteBtn = document.getElementById('deleteCallBtn');
+            const spinner = document.getElementById('deleteSpinner');
+            const deleteText = document.getElementById('deleteCallText');
+            
+            deleteBtn.disabled = true; spinner.classList.remove('hidden'); deleteText.textContent = 'Deleting...';
+            
+            try {
+                const res = await fetch(`/api/calls/${currentCallId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.error) { showToast(data.error, 'error'); return; }
+                showToast('Call deleted', 'success');
+                closeDetails(); loadCalls();
+            } catch (err) {
+                showToast('Failed to delete call', 'error');
+            } finally {
+                deleteBtn.disabled = false; spinner.classList.add('hidden'); deleteText.textContent = 'Delete Call';
+            }
+        }
+        
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const icons = {
+                error: '<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>',
+                success: '<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>',
+                info: '<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+            };
+            toast.innerHTML = `<span class="flex items-center gap-2">${icons[type] || icons.info}${message}</span>`;
+            toast.className = `fixed bottom-6 right-6 px-5 py-3 rounded-xl shadow-lg transition-all duration-300 text-sm font-semibold z-[100] ${
+                type === 'error' ? 'bg-red-600 text-white shadow-red-500/25' : type === 'success' ? 'bg-emerald-600 text-white shadow-emerald-500/25' : 'bg-slate-800 text-white shadow-slate-800/25'
+            }`;
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+            setTimeout(() => { toast.style.transform = 'translateY(20px)'; toast.style.opacity = '0'; }, 3000);
+        }
+        
+        async function loadFeedback(callId) {
+            const feedbackLoading = document.getElementById('feedbackLoading');
+            const feedbackDisplay = document.getElementById('feedbackDisplay');
+            
+            feedbackLoading.classList.remove('hidden');
+            feedbackDisplay.classList.add('hidden');
+            document.getElementById('feedbackBtnText').textContent = 'Loading...';
+            
+            try {
+                const res = await fetch(`/api/feedback/${callId}`);
+                const data = await res.json();
+                currentFeedback = data;
+                feedbackLoading.classList.add('hidden');
+                
+                if (data.rating) {
+                    document.getElementById('feedbackBtnText').textContent = `Edit Feedback (${data.rating}/5)`;
+                    feedbackDisplay.classList.remove('hidden');
+                    
+                    let starsHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        starsHtml += `<svg class="w-5 h-5 ${i <= data.rating ? 'text-amber-400' : 'text-slate-200'}" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                        </svg>`;
+                    }
+                    document.getElementById('feedbackStars').innerHTML = starsHtml;
+                    document.getElementById('feedbackRatingText').textContent = `${data.rating}/5`;
+                    
+                    const commentEl = document.getElementById('feedbackCommentDisplay');
+                    if (data.comment && data.comment.trim()) { commentEl.textContent = data.comment; commentEl.classList.remove('hidden'); }
+                    else { commentEl.classList.add('hidden'); }
+                } else {
+                    document.getElementById('feedbackBtnText').textContent = 'Add Feedback';
+                    feedbackDisplay.classList.add('hidden');
+                }
+            } catch (err) {
+                feedbackLoading.classList.add('hidden');
+                currentFeedback = null;
+                document.getElementById('feedbackBtnText').textContent = 'Add Feedback';
+                feedbackDisplay.classList.add('hidden');
+            }
+        }
+        
+        function showFeedbackModal() {
+            if (!currentCallId) return;
+            currentRating = currentFeedback?.rating || 0;
+            document.getElementById('feedbackComment').value = currentFeedback?.comment || '';
+            updateStars();
+            document.getElementById('feedbackModal').classList.remove('hidden');
+        }
+        
+        function hideFeedbackModal() {
+            document.getElementById('feedbackModal').classList.add('hidden');
+            currentRating = 0;
+            document.getElementById('feedbackComment').value = '';
+            updateStars();
+        }
+        
+        function setRating(rating) { currentRating = rating; updateStars(); }
+        
+        function updateStars() {
+            document.querySelectorAll('.star-btn').forEach(btn => {
+                const rating = parseInt(btn.dataset.rating);
+                btn.classList.toggle('text-amber-400', rating <= currentRating);
+                btn.classList.toggle('text-slate-200', rating > currentRating);
+            });
+        }
+        
+        async function submitFeedback() {
+            if (!currentCallId) return;
+            if (currentRating === 0) { showToast('Please select a rating', 'error'); return; }
+            
+            const comment = document.getElementById('feedbackComment').value.trim();
+            const submitBtn = document.getElementById('feedbackSubmitBtn');
+            const cancelBtn = document.getElementById('feedbackCancelBtn');
+            const spinner = document.getElementById('feedbackSpinner');
+            const submitText = document.getElementById('feedbackSubmitText');
+            
+            submitBtn.disabled = true; cancelBtn.disabled = true;
+            spinner.classList.remove('hidden'); submitText.textContent = 'Saving...';
+            
+            try {
+                const res = await fetch(`/api/feedback/${currentCallId}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rating: currentRating, comment })
+                });
+                const data = await res.json();
+                if (data.error) { showToast(data.error, 'error'); return; }
+                showToast('Feedback saved!', 'success');
+                hideFeedbackModal();
+                loadFeedback(currentCallId);
+                loadCalls();
+            } catch (err) {
+                showToast('Failed to save feedback', 'error');
+            } finally {
+                submitBtn.disabled = false; cancelBtn.disabled = false;
+                spinner.classList.add('hidden'); submitText.textContent = 'Save Feedback';
+            }
+        }
+        
+        loadCalls();
+        setInterval(loadCalls, 30000);
+    </script>
+</body>
+</html>
